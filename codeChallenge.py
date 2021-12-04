@@ -16,18 +16,25 @@ def shotgunChallenge(id, sequenceFields, shotFields):
 
     shotgun_api3.shotgun.NO_SSL_VALIDATION = True
     sg = shotgun_api3.Shotgun("https://laika-demo.shotgunstudio.com",
-                              login="code_challenge",
-                              password="$zvMznkhddo0tgwgwbftzaqob")
+                              script_name="code_challenge",
+                              api_key="$zvMznkhddo0tgwgwbftzaqob")
     # Be sure to close connection when you are done.
     sg.connect()
-
+    print(sg.info())
+    filters = [
+        ['id', 'is', id]
+        ]
+    shots = sg.find("Shot", filters, shotFields)
+    sequences = sg.find("Sequences", filters, sequenceFields)
+    print(shots)
+    print(sequences)
     # Do the stuff
 
     sg.close()
 
 
 if __name__ == "__main__":
-    shotgunChallenge(id="85",
+    shotgunChallenge(id=85,
                      sequenceFields=["sg_cut_duration",
                                      "sg_ip_versions"],
                      shotFields=["sg_latest_version"])
