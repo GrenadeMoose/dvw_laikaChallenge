@@ -7,7 +7,7 @@ html_out_dir = os.path.join(
 )
 
 
-def shotgunChallenge(id, sequenceFields, shotFields):
+def shotgun_challenge(id, sequence_fields, shot_fields):
     """
     Initializes the connection to the shotgun server.
     Pulls requested information.
@@ -20,21 +20,22 @@ def shotgunChallenge(id, sequenceFields, shotFields):
                               api_key="$zvMznkhddo0tgwgwbftzaqob")
     # Be sure to close connection when you are done.
     sg.connect()
-    print(sg.info())
+
     filters = [
-        ['id', 'is', id]
-        ]
-    shots = sg.find("Shot", filters, shotFields)
-    sequences = sg.find("Sequences", filters, sequenceFields)
-    print(shots)
-    print(sequences)
-    # Do the stuff
+        ['project', 'is', {'type': 'Project', 'id': id}]
+    ]
+
+    shots = sg.find("Shot", filters, shot_fields)
+    sequences = sg.find("Sequence", filters, sequence_fields)
+    
+    for s in shots:
+        print(sg.schema_field_read("Shot", field_name="sg_latest_version", project_entity=s))
 
     sg.close()
 
 
 if __name__ == "__main__":
-    shotgunChallenge(id=85,
-                     sequenceFields=["sg_cut_duration",
-                                     "sg_ip_versions"],
-                     shotFields=["sg_latest_version"])
+    shotgun_challenge(id=85,
+                      sequence_fields=["sg_cut_duration",
+                                       "sg_ip_versions"],
+                      shot_fields=["sg_latest_version"])
