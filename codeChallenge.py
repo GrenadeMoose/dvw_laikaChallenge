@@ -32,10 +32,12 @@ def shotgun_challenge(id, queries):
         ['project', 'is', {'type': 'Project', 'id': id}]
     ]
 
+    # Do the query
     for entity, fields in queries.items():
-        res = sg.find(entity, [['project.Project.id', 'is', id]], fields)
+        res = sg.find(entity, filters, fields)
         save_to_html(res, entity, fields)
 
+    # Closing connection
     sg.close()
 
 
@@ -68,9 +70,11 @@ def save_to_html(query_results, entity, fields):
 
     table.append("</table>")
 
+    # Create directory if none exists
     if not os.path.exists(html_out_dir):
         os.mkdir(html_out_dir)
 
+    # Write output to html
     with open(os.path.join(html_out_dir, "{}.html".format(entity)), 'w') as outfile:
         outfile.write('\n'.join(table))
 
