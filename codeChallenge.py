@@ -34,7 +34,7 @@ def shotgun_challenge(id, queries):
 
     # Do the query
     for entity, fields in queries.items():
-        res = sg.find(entity, filters, fields)
+        res = sg.find(entity, filters, fields, filter_operator='any')
         save_to_html(res, entity, fields)
 
     # Closing connection
@@ -62,10 +62,13 @@ def save_to_html(query_results, entity, fields):
 
     # Append values
     for r in query_results:
-        table.append("\t\t<th>{0}</th>".format(r['type']))
-        table.append("\t\t<th>{0}</th>".format(r['id']))
+        table.append("\t\t<td>{0}</td>".format(r['type']))
+        table.append("\t\t<td>{0}</td>".format(r['id']))
         for field in fields:
-            table.append("\t\t<th>{0}</th>".format(r[field]))
+            if field in r.keys():
+                table.append("\t\t<td>{0}</td>".format(r[field]))
+            else:
+                table.append("\t\t<td>FIELD ERROR</td>")
         table.append("\t</tr>")
 
     table.append("</table>")
