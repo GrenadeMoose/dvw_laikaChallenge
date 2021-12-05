@@ -34,6 +34,10 @@ def shotgun_challenge(id, queries):
 
     # Do the query
     for entity, fields in queries.items():
+        for field in fields:
+            field_config = sg.schema_field_read(entity, field)
+            print(field_config)
+            sg.find(entity, field_config[field]['properties']['query']['value']['filters'], [field])
         res = sg.find(entity, filters, fields, filter_operator='any')
         save_to_html(res, entity, fields)
 
