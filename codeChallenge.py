@@ -35,14 +35,50 @@ def shotgun_challenge(id, queries):
     # Do the query
     for entity, fields in queries.items():
         for field in fields:
+            # Attempt to clean up filter and query to read the Query Field data via API
+            # According to the documentation, this is not supported. But it sounds like
+            # this can be done by reworking the format of a schema field to fit into a
+            # find or summarize call.
             field_config = sg.schema_field_read(entity, field)
-            print(field_config)
-            sg.find(entity, field_config[field]['properties']['query']['value']['filters'], [field])
+
+            query_entity = field_config[field]['properties']['query']['value']['entity_type']
+            query_filters = field_config[field]['properties']['query']['value']['filters']
+            query_field = field_config[field]['properties']['summary_field']
+
+            # Prep the query filters
+            prep_query(query_filters, entity)
+            query_filters['conditions'].append(filters[0])
+
+            # This does not work yet.
+            #item = sg.find(entity, query_filters, [field])
+
         res = sg.find(entity, filters, fields, filter_operator='any')
         save_to_html(res, entity, fields)
 
     # Closing connection
     sg.close()
+
+
+def prep_query(query, entity):
+    """
+    This is an attempt to get a query field's filter to be readable by a find or summarize call
+    :param query: The query filters pulled from a schema_field_read
+    :param entity: The entity that relates to the query field
+    :return: reformatted query with active removed, and parent_entity_token pointed toward the correct entity type
+    """
+    if (isinstance(query, dict)):
+        for k in list(query):
+            prep_query(query[k], entity)
+            if 'active' == k:
+                del query[k]
+    elif isinstance(query, list):
+        for i in reversed(range(len(query))):
+            if isinstance(query[i], dict):
+                if 'active' in query[i] and query[i]['active'] == 'false':
+                    del query[i]
+                if 'parent_entity_token' in query[i].values():
+                    query[i] = entity
+                prep_query(query[i], entity)
 
 
 def save_to_html(query_results, entity, fields):
